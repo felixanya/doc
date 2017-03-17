@@ -1,0 +1,72 @@
+网址
+1.官网：redis.io
+2.cluster: https://redis.io/topics/cluster-tutorial
+3.手动创建cluster 服务:http://www.cnblogs.com/junl0513/p/833f4d3eefc69485958fe83b5c9057d7.html
+
+cluster部署：
+a.配置
+redis.conf
+－－－－－－－－－－－
+port 7000
+cluster-enabled yes
+cluster-config-file nodes.conf
+cluster-node-timeout 5000
+appendonly yes
+－－－－－－－－－－－
+nodes.conf为系统自动生成并维护，文件名、路径可修改。
+
+b.创建节点目录
+mkdir cluster-test
+cd cluster-test
+mkdir 7000 7001 7002 7003 7004 7005
+
+c.创建节点配置文件，并启动服务(此时cluster并未建立起来)
+将redis.conf分别放入700x文件夹下，并修改port
+分别进入文件夹并启动服务
+cd 7000
+../redis-server ./redis.conf
+
+d.创建cluster(2种方式)
+d.1 脚本执行 ./redis-trib.rb create --replicas 1 127.0.0.1:7000 127.0.0.1:7001 \
+127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005
+注：
+执行ruby脚本需先执行gem install redis
+--replicas 1:为每个主节点创建一个从。该命令为创建3主3从
+d.2 手动执行
+redis-cli -p 7000
+cluster meet 127.0.0.1:7001
+....
+注：该命令为创建6主
+
+e.reshard
+交互：./redis-trib.rb reshard 127.0.0.1:7000
+命令：./redis-trib.rb reshard --from <node-id> --to <node-id> --slots <number of slots> --yes <host>:<port>
+注：
+只能指定从哪个节点移动多少slots到目标节点，源节点可以为所有源节点
+获取节点id方法：redis-cli -p 7000 cluster nodes
+
+f.增加新节点(7006)
+1.创建节点，并启动服务 －－ 参考步骤bc两步
+2.master节点
+2.1:./redis-trib.rb add-node 127.0.0.1:7006 127.0.0.1:7000
+2.2:reshard －－ 参考步骤e
+3.slave节点
+3.1:系统自动将slave节点作为拥有从节点最少的master节点的从
+./redis-trib.rb add-node --slave 127.0.0.1:7006 127.0.0.1:7000
+3.2:作为指定master的从节点
+./redis-trib.rb add-node --slave --master-id 3c3a0c74aae0b56170ccb03a76b60cfe7dc1912e 127.0.0.1:7006 127.0.0.1:7000
+4.手动
+
+g.删除节点
+slave:./redis-trib del-node 127.0.0.1:7000 `<node-id>`
+master:只有空的master才能用上面的指令删除。非空master可以通过reshard，将所有slot移到其他节点后删除，后手动将master变为slave后再删除
+
+h.手动failover(将从变为主)
+连接相应的slave节点 -> 执行cluster failover
+
+i.升级
+slave: stop it -> start with new version of redis
+master: 先转为从后，在升级
+
+其他:
+CLUSTER REPLICATE <master-node-id>
