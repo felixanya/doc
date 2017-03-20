@@ -70,3 +70,5 @@ master: 先转为从后，在升级
 
 其他:
 CLUSTER REPLICATE <master-node-id>
+
+连接使用: redis-cli -c -p 7000
