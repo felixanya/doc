@@ -34,8 +34,9 @@ d.1 脚本执行 ./redis-trib.rb create --replicas 1 127.0.0.1:7000 127.0.0.1:70
 --replicas 1:为每个主节点创建一个从。该命令为创建3主3从
 d.2 手动执行
 redis-cli -p 7000
-cluster meet 127.0.0.1:7001
+cluster meet 127.0.0.1 7001
 ....
+修改nodes.conf文件中self的slot范围
 注：该命令为创建6主
 
 e.reshard
