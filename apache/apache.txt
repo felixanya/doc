@@ -1,0 +1,13 @@
+apache
+1.启动/重启
+sudo apachectl start/restart
+
+2.配置: /etc/apache2/httpd.conf(log等配置在里面, 默认/private/var/log/apache2/)
+
+3.启动后，浏览器中输入 localhost, 查看是否启动成功
+入口文件: /Library/WebServer/Documents/index.html.en
+
+4.test.php
+<?php phpinfo();?>
+浏览器: localhost/test.php, 可查看PHP配置文件位置(/Library/Server/Web/Config/php)
+
