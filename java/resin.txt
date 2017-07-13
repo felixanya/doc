@@ -1,0 +1,8 @@
+resin拉起的java项目启动
+1.启动命令：resin -conf resin.xml -server xxx start
+2.配置文件拉起顺序：
+resin.xml->app_default.xml(compiling-loader/library-loader)->
+web.xml->
+  2.1 application.xml->读取xxx.properties，并初始化bean
+  2.2 sevlet.xml->扫描controller
+  2.3 Listener->读取global配置，并启动线程

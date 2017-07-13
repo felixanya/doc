@@ -1,0 +1,18 @@
+1.安装solr 5.1
+
+2.创建zk节点/com/xxx/config/solr
+
+3.启动solr:
+./solr start -c -s ~/data/solr/forum/ -z "zookeeper1:2181/com/xxx/config/solr,zookeeper2:2181/com/xxx/config/solr"
+(多zk用逗号分隔)
+
+4.创建collection, 并上传配置文件
+./solr create -c forum -d ~/data/solr/solr/forum/forum/conf/ -shards 1 -replicationFactor 2
+
+注:
+1.可直接在forum上操作. 如:
+http://xxx.com/solr/forum/select?q=*%3A*&wt=json&indent=true
+
+参考文档:
+http://wenku.baidu.com/link?url=ibjOGgWu_FMZ2NUj6_jhLApXwQyYTRALRnonq5kdUiL9OqJe5Yg5hobKBdbx-otKrjRPDibW40sSDvl0xnJKHN_LYv_1nW4PXtsEgs2462K
+http://tech.uc.cn/?p=2387
