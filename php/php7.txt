@@ -1,0 +1,98 @@
+1.参数/返回值类型声明
+function test(int ...$arg):string {
+	$ret = "";
+	foreach ($arg as $v) {
+		$ret .= "|".$v;
+	}
+	return $ret;
+}
+echo test(1,2,10), "\n";
+
+2.null合并运算符 -- 如果变量存在且值不为NULL,它就会返回自身的值，否则返回它的第二个操作数
+$t=null;
+echo $t??2, "\n";
+
+3.太空船操作符（组合比较符）
+echo 1 <=> 1; // 0
+echo 1 <=> 2; // -1
+echo 2 <=> 1; // 1
+
+4.通过 define() 定义常量数组 -- 在 PHP5.6 中仅能通过 const 定义
+define('ANIMALS', [
+    'dog',
+    'cat',
+    'bird'
+]);
+echo ANIMALS[1]; // 输出 "cat"
+
+5.匿名类 -- 通过new class来实例化一个匿名类,这可以用来替代一些“用后即焚”的完整类定义
+interface Logger {
+    public function log(string $msg);
+}
+function test($log) {
+	$log->log("test class!\n");
+}
+test(new class implements Logger {
+	public function log(string $msg) {
+		echo $msg;
+	}
+});
+
+6.Closure::call()
+class ca {
+    public function testA() { echo "testA!\n"; }
+    private function testB() { echo "testB!\n"; }
+}
+// PHP 7 之前版本的代码
+$testX = function($func) {return $this->$func();};
+$test = $testX->bindTo(new ca, 'ca'); // 中间层闭包
+$test('testA');
+$test('testB');
+
+// PHP 7+ 及更高版本的代码
+$testA = function() { $this->testA(); };
+$testB = function() { $this->testB(); };
+$testA->call(new ca);
+$testB->call(new ca);
+
+$test = function($func) { $this->$func(); };
+$test->call(new ca, "testA");
+$test->call(new ca, "testB");
+
+7.为unserialize()提供过滤
+
+8.IntlChar
+
+9.Group use declarations
+// PHP 7 之前的代码
+use some\namespace\ClassA;
+use some\namespace\ClassB;
+use some\namespace\ClassC as C;
+
+use function some\namespace\fn_a;
+use function some\namespace\fn_b;
+use function some\namespace\fn_c;
+
+use const some\namespace\ConstA;
+use const some\namespace\ConstB;
+use const some\namespace\ConstC;
+
+// PHP 7+ 及更高版本的代码
+use some\namespace\{ClassA, ClassB, ClassC as C};
+use function some\namespace\{fn_a, fn_b, fn_c};
+use const some\namespace\{ConstA, ConstB, ConstC};
+
+10.生成器可以返回表达式
+
+11.整数除法函数 intdiv()
+var_dump(intdiv(10, 3));//int(3)
+
+12.新加入两个跨平台的函数：
+random_bytes() 和 random_int() 用来产生高安全级别的随机字符串和随机整数
+$bytes = random_bytes(5);
+var_dump(bin2hex($bytes));
+
+
+
+
+

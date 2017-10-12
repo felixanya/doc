@@ -1,3 +1,8 @@
 1.
 通过 mpstat  -P ALL 1 命令查看cpu 都用在哪里，可以看到cpu都绝大部分用在 sys态上
 通过 strace -p pid -c 查看haproxy 进程那个系统调用占用cpu 最多，看到cpu 都用在了 connect系统调用上
+
+2.zip
+zip -r 1.zip "t1/1.txt"  // 生成或向zip文件中追加文件，带有路径t1（-r可省略）
+zip -j 1.zip "t1/1.txt"  // 生成或向zip文件中追加文件，不带有路径t1
+unzip -v 1.zip // 显示zip文件中文件列表

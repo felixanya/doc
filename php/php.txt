@@ -1,0 +1,2 @@
+1.PECL 的全称是 The PHP Extension Community Library ，是一个开放的并通过 
+PEAR(PHP Extension and Application Repository，PHP 扩展和应用仓库)打包格式来打包安装的 PHP 扩展库仓库
