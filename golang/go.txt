@@ -1,4 +1,3 @@
-
 go语言 -- 严格的语法格式
 
 1.public变量必须以大写字母开头, private变量必须以小写字母开头.(不用使用public和private关键字)
@@ -29,7 +28,19 @@ go语言 -- 严格的语法格式
 
 	3.2 panic:
 	3.3 recover:
+	func main() {
+		// maybe no use -- cannot catch other goruntine panic
+		defer func() {
+			if e := recover(); e != nil {
+				logs.GetLogger().Critical("panic:%v", e)
+				logs.Warn(string(debug.Stack()))
+			}
+			logs.Close()
+		}()
 
+		controllers.Serve()
+	}		
+	
 4.1函数允许返回多个值。
 	func getName()(firstName, middleName, lastName, nickName string){
 		return "May", "M", "Chen", "Babe"
@@ -170,6 +181,12 @@ go语言 -- 严格的语法格式
 	b.该函数不能带参数，也不能定义返回值
 	c.命令行传入的参数在os.Args变量中保存
 	d.如果需要支持命令行开关，可使用flag包
+	func parseFlag() {
+		ins := flag.String("ins", "get", "ins:[add, get]")
+		flag.Parse()
+	
+		fmt.Println(*ins);
+	}
 
 18.代码注释与C++保持一致
 	/*
@@ -220,7 +237,7 @@ go语言 -- 严格的语法格式
 	var v2 = 10					// 正确的使用方式2，编译器可以自动推导出v2的类型
 	v3 := 10					// 正确的使用方式3，编译器可以自动推导出v3的类型
 
-	注: ":=" -- 用于明确表达同时进行变量声明和初始化的工作(出现在:=左侧的变量不应该是已经被声明过的，否则会导致编译错误)
+	注: ":=" -- 用于明确表达同时进行变量声明和初始化的工作(出现在:=左侧的变量应该有未被声明过的，否则会导致编译错误)
 
 23.常量定义
 	-12
@@ -260,22 +277,22 @@ go语言 -- 严格的语法格式
 
 26.数据类型
 	a.内置的基础类型
-	 布尔类型：bool
-	 整型：int8、byte、int16、int、uint、uintptr等
-	 浮点类型：float32、float64
-	 复数类型：complex64、complex128
-	 字符串：string
-	 字符类型：rune
-	 错误类型：error
+	. 布尔类型：bool
+	. 整型：int8、byte、int16、int、uint、uintptr等
+	. 浮点类型：float32、float64
+	. 复数类型：complex64、complex128
+	. 字符串：string
+	. 字符类型：rune
+	. 错误类型：error
 
 	b.复合类型
-	 指针（pointer）
-	 数组（array）
-	 切片（slice）
-	 字典（map）
-	 通道（chan）
-	 结构体（struct）
-	 接口（interface）
+	. 指针（pointer）
+	. 数组（array）
+	. 切片（slice）
+	. 字典（map）
+	. 通道（chan）
+	. 结构体（struct）
+	. 接口（interface）
 
 	注:
 	a.对于常规的开发来说，用int和uint就可以了，没必要用int8之类明确指定长度的类型，以免导致移植困难
@@ -284,7 +301,7 @@ go语言 -- 严格的语法格式
 27.布尔类型不能接受其他类型的赋值，不支持自动或强制的类型转换
 
 28.运算符同c/c++
-	a. +、、*、/和%
+	a. +、－、*、/和%
 	b. >、<、==、>=、<=和!=
 
 29.两个不同类型的整型数不能直接比较.
@@ -296,7 +313,7 @@ go语言 -- 严格的语法格式
 	x ^ y		异或	124 ^ 2		// 结果为126
 	x & y		与		124 & 2		// 结果为0
 	x | y		或		124 | 2		// 结果为126
-	^x			取反	^2			// 结果为3
+	^x			取反	^2			// 结果为.3
 
 31.浮点型(float32和float64)
 	a. fvalue2 := 12.0 // 自动设为float64; 如果不加小数点，fvalue2会被推导为整型而不是浮点型
@@ -400,11 +417,12 @@ go语言 -- 严格的语法格式
 	 s0 := make([]int, 2, 10)
 	 s1 := append(s0, 2)
 	 s2 := append(s0, 3)
-	 fmt.Printf("Element: %d %d\n", s1[2], s2[2])	// 3 3
+	 fmt.Printf("Element: %d %d\n", s1[2], s2[2])	// 3 3 －－ s0底层数组空间足够，故s0，s1和s2底层数组使用的是同一块内存
+	
 	 s0 = []int{0, 1}
 	 s1 = append(s0, 2)
 	 s2 = append(s0, 3)
-	 fmt.Printf("Element: %d %d\n", s1[2], s2[2])	// 2 3
+	 fmt.Printf("Element: %d %d\n", s1[2], s2[2])	// 2 3 －－ s0底层数组空间不够，故s1和s2底层数组各自另行申请内存
 	}
 
 39.map -- 例
@@ -463,16 +481,6 @@ Go语言支持如下的几种流程控制语句：
 	无论语句体内有几条语句，花括号{}都是必须存在的
 	左花括号{必须与if或者else处于同一行
 	在if之后，条件语句之前，可以添加变量初始化语句，使用;间隔
-	在有返回值的函数中，不允许将“最终的”return语句包含在if...else...结构中，否则会编译失败
-
-	编译失败的案例如下 -- 这个好像可以编译通过
-	func example(x int) int {
-		if x == 0 {
-			return 5
-		} else {
-			return x
-		}
-	}
 
 41.2 选择语句
 	switch i {
@@ -491,16 +499,16 @@ Go语言支持如下的几种流程控制语句：
 	}
 
 	运行上面的案例，将会得到如下结果：
-	 i = 0时，输出0；
-	 i = 1时，输出1；
-	 i = 2时，输出3；
-	 i = 3时，输出3；
-	 i = 4时，输出4, 5, 6；
-	 i = 5时，输出4, 5, 6；
-	 i = 6时，输出4, 5, 6；
-	 i = 其他任意值时，输出Default。
+	. i = 0时，输出0；
+	. i = 1时，输出1；
+	. i = 2时，输出3；
+	. i = 3时，输出3；
+	. i = 4时，输出4, 5, 6；
+	. i = 5时，输出4, 5, 6；
+	. i = 6时，输出4, 5, 6；
+	. i = 其他任意值时，输出Default。
 
-	比较有意思的是，switch后面的表达式甚至不是必需的，比如下面的例子：
+	switch后面的表达式不是必需的，比如下面的例子：
 	switch {
 		case 0 <= Num && Num <= 3:
 			fmt.Printf("0-3")
@@ -511,12 +519,12 @@ Go语言支持如下的几种流程控制语句：
 	}
 
 	在使用switch结构时，我们需要注意以下几点：
-	 左花括号{必须与switch处于同一行
-	 条件表达式不限制为常量或者整数
-	 单个case中，可以出现多个结果选项
-	 与C语言等规则相反，Go语言不需要用break来明确退出一个case
-	 只有在case中明确添加fallthrough关键字，才会继续执行紧跟的下一个case
-	 可以不设定switch之后的条件表达式，在此种情况下，整个switch结构与多个if...else...的逻辑作用等同
+	. 左花括号{必须与switch处于同一行
+	. 条件表达式不限制为常量或者整数
+	. 单个case中，可以出现多个结果选项
+	. 与C语言等规则相反，Go语言不需要用break来明确退出一个case
+	. 只有在case中明确添加fallthrough关键字，才会继续执行紧跟的下一个case
+	. 可以不设定switch之后的条件表达式，在此种情况下，整个switch结构与多个if...else...的逻辑作用等同
 
 41.3 循环语句 -- 只支持for关键字，而不支持while和do-while结构
 	sum := 0
@@ -605,7 +613,7 @@ Go语言支持如下的几种流程控制语句：
 
 	func(ch chan int) {
 		ch <- ACK
-	} (reply_chan)								// 花括号后直接跟参数列表表示函数调用
+	} (reply_chan)		// 花括号后直接跟参数列表表示函数调用
 
 45.为类型添加方法
 	type Integer int
@@ -618,14 +626,14 @@ Go语言支持如下的几种流程控制语句：
 	}
 
 46.Go语言中的大多数类型都基于值语义，包括：
- 基本类型，如byte、int、bool、float32、float64和string等；
- 复合类型，如数组（array）、结构体（struct）和指针（pointer）等。
+. 基本类型，如byte、int、bool、float32、float64和string等；
+. 复合类型，如数组（array）、结构体（struct）和指针（pointer）等。
 
 47.引用语义
- 数组切片：指向数组（array）的一个区间。
- map：极其常见的数据结构，提供键值查询能力。
- channel：执行体（goroutine）间的通信设施。
- 接口（interface）：对一组满足某个契约的类型的抽象。
+. 数组切片：指向数组（array）的一个区间。
+. map：极其常见的数据结构，提供键值查询能力。
+. channel：执行体（goroutine）间的通信设施。
+. 接口（interface）：对一组满足某个契约的类型的抽象。
 
 48.创建并初始化Rect类型的对象实例
 	type Rect struct {
@@ -731,6 +739,28 @@ Go语言支持如下的几种流程控制语句：
 
 	d.关闭channel -- close(ch)
 	e.读取channel -- x, ok := <-ch				// ok为false则表示ch已经被关闭
+	
+	// 例：
+	ch := make(chan int)
+    close(ch)
+    
+    for r := range ch {
+        fmt.Println(r) // 不知执行到这里
+    }
+	
+	select {
+    case r:=<-ch:
+        fmt.Println("select:",r) // 执行到该处，输出 select: 0
+    default:
+        fmt.Println("default")
+    }
+	
+	r, ok := <-ch
+	fmt.Println("if:", r, ok) // if: 0 false
+	
+	// 输出
+	select: 0
+	if: 0 false
 
 53.在语言级别支持select关键字
 	select {
@@ -798,7 +828,7 @@ Go语言支持如下的几种流程控制语句：
 		// 到这里表示所有计算已经结束
 	}
 	
-	注: 
+	注: 现在版本已默认支持多核
 	a.在Go语言升级到默认支持多CPU的某个版本之前，我们可以先通过设置环境变量
 	GOMAXPROCS的值来控制使用多少个CPU核心. 直接设置环境变量GOMAXPROCS的值，
 	或者在代码中启动goroutine之前先调用以下这个语句 -- runtime.GOMAXPROCS(16)
@@ -916,14 +946,17 @@ Go语言支持如下的几种流程控制语句：
 	slice类型的零值会被转化为 null。
 	f.结构体会转化为JSON对象，并且只有结构体里边以大写字母开头的可被导出的字段才会被转化输出，
 	而这些可导出的字段会作为JSON对象的字符串索引。
-	g.转化一个map类型的数据结构时，该数据的类型必须是 map[string]T（T可以是encoding/json 包支持的任意数据类型）
+	g.转化一个map类型的数据结构时，该数据的类型必须是 map[string]T（T可以是encoding/json 包支持的任意数据类型）
 
 63.iota
 a. iota随分组中常量定义的“行数”从0开始累加，而不是随其出现的次数，书中这个地方有问题。不论某行的常量是否赋值成iota，iota都会进行自增
 b. 如果两个常量定义在同一行，并且都赋值成iota，则该两个常量的值是一样的，同时iota只自增一次；切记，iota的自增是和“行数”对应的
 
-64.Go里面有两个保留的函数：init函数（能够应用于所有的package）和main函数（只能应用于package main）.
-这两个函数在定义时不能有任何的参数和返回值。虽然一个package里面可以写任意多个init函数，但这无论是对于可读性还是以后的可维护性来说，我们都强烈建议用户在一个package中每个文件只写一个init函数 -- 即一个文件可以有多个init()函数
+64.Go里面有两个保留的函数：
+init函数，能够应用于所有的package－－初始化函数
+main函数，只能应用于package main－－入口函数
+这两个函数在定义时不能有任何的参数和返回值。虽然一个package里面可以写任意多个init函数，
+但这无论是对于可读性还是以后的可维护性来说，我们都强烈建议用户在一个package中每个文件只写一个init函数 -- 即一个文件可以有多个init()函数
 
 65.for
 	for { // Infinite loop
@@ -953,15 +986,15 @@ b. 如果两个常量定义在同一行，并且都赋值成iota，则该两个�
 	for key := range aMap { // Map iteration ➐
 		block // value := aMap[key]
 	}
-	for item := range aChannel { // Channel iteration
+	for item := range aChannel { // Channel iteration，close chan时退出
 		block
 	}
 
 66.channel
-	channel <- value // Blocking send
+	channel <- value // chan大小为1时，为blocking send
 	<-channel // Receive and discard
 	x := <-channel // Receive and store
-	x, ok := <-channel // As above & check for channel closed & empty
+	x, ok := <-channel // chan clsoe时，ok=false
 
 67.method: A method expression is a function that must be passed a value of the method’s type as its first argument.
 	func (part Part) String() string {
@@ -976,6 +1009,9 @@ b. 如果两个常量定义在同一行，并且都赋值成iota，则该两个�
 	hasPrefix := Part.HasPrefix		// Effective signature: func(Part, string) bool
 	asStringP := (*Part).String		// Effective signature: func(*Part) string
 	sp := asStringP(&part)
+	
+	f := part.String
+	f()
 
 68.runtime.Caller(): returns information about the functions that have
 	been called and not yet returned in the current goroutine. The int argument
@@ -996,46 +1032,53 @@ b. 如果两个常量定义在同一行，并且都赋值成iota，则该两个�
 Syntax Description/result
 append(s, ...) The slice it was given plus the new items at the end if the
 slice’s capacity is sufficient; otherwise a new slice with the
-original items plus the new items at the end (see §4.2.3,
-156 ➤)
+original items plus the new items at the end
+
 cap(x) The capacity of slice x or the channel buffer capacity of channel
 x or the length of array (or the array pointed to by) x; see
-also len() (see §4.2, 148 ➤)
+also len()
+
 close(ch) Closes channel ch (but not legal for receive-only channels). No
 more data can be sent to the channel. Data can continue to be
 received from the channel (e.g., any sent but not yet received
 values), and when there are no more values in the channel,
 receivers will get the channel data type’s zero value.
+
 complex(r, i) A complex128 with the given r (real) and i (imaginary) parts,
-both of type float64 (see §2.3.2.1, 70 ➤)
+both of type float64
+
 copy(dst, src)
 copy(b, s)
 Copies (possibly overlapping) items from the src slice into the
 dst slice, truncating if there isn’t enough room; or copies s of
-type string’s bytes to b of type []byte (see §4.2.3, 156 ➤ and
-➤ 268)
+type string’s bytes to b of type []byte 
+
 delete(m, k) Deletes the item with key k from map m or safely does nothing
-if there’s no such key (see §4.3, 164 ➤)
-imag(cx) The imaginary part of cx of type complex128 as a float64 (see
-§2.3.2.1, 70 ➤)
+if there’s no such key
+
+imag(cx) The imaginary part of cx of type complex128 as a float64 
+
 len(x) The length of slice x or the number of items queued in channel
 x’s buffer or the length of array (or the array pointed to by) x or
 the number of items in map x or the number of bytes in string
-x; see also cap() (see §4.2.3, 156 ➤)
-make(T)
-make(T, n)
-make(T, n, m)
-A reference to a slice, map, or channel of type T. If n is given
-this is a slice’s length and capacity, or a hint to a map of how
-many items to expect, or a channel’s buffer size. For slices only,
-n and m may be given to specify the length and capacity (see
-150 ➤ for slices, 165 ➤ for maps, and Chapter 7 for channels).
-new(T) A pointer to a value of type T (see §4.1, 140 ➤)
-panic(x) Raises a catchable runtime exception with value x (see §5.5.1,
-➤ 213)
-real(cx) The real part of cx of type complex128 as a float64 (see §2.3.2.1,
-70 ➤)
-recover() Catches a runtime exception (see §5.5.1,➤ 213)
+x; see also cap()
+
+cap: chan, slice, array
+len: chan, slice, array, map, string
+
+A reference to a slice, map, or channel of type T.
+	make(T)
+	make(T, n)
+	make(T, n, m)
+	
+-- If n is given this is a slice’s length and capacity, or a hint to a map of how
+		many items to expect, or a channel’s buffer size. 
+-- For slices only,n and m may be given to specify the length and capacity
+		
+new(T) A pointer to a value of type T
+panic(x) Raises a catchable runtime exception with value x
+real(cx) The real part of cx of type complex128 as a float64
+recover() Catches a runtime exception
 
 70.Arrays are created using the syntaxes:
 [length]Type
@@ -1077,26 +1120,24 @@ func testError() {
 	x, e := err1()
 	if e != nil {
 		fmt.Println(x, "err1", e)
-		return
 	}
 
 	n, e := myErrNil()
 	if e != nil {
 		fmt.Println(n, "myErrNil", e)
-		return
 	}
 
 	n2, e := myErrNil2()
 	if e != nil {
 		fmt.Println(n2, "myErrNil2", e)
-		return
 	}
-
-	fmt.Println("ok")
 }
 
-执行后输出: 10 myErrNil <nil>
-e的类型不一致, 编译时没有检查处理, 执行时出意外
+执行后输出: 
+10 myErrNil <nil>
+12 myErrNil2 <nil>
+
+原因: e为error类型, 执行n, e := myErrNil()后，*Error(nil)转为error，所以不为nil
 
 ------------------------------------------------------------------------
 swagger
