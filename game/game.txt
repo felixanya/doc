@@ -6,3 +6,9 @@
 a。格子单独同步，每个角色只更新自己的数据，修改其他数据时走消息
 b。缓存周围格子玩家数据
 c。九宫格分2种，一种需要主动更新的，有玩家具体信息，另一种只是缓存玩家数据，不主动更新
+
+1.数据库
+a.mysql+redis: redis作为cache
+读取／删除(cache)／保存？
+b.redis+mysql: redis为主库，长时间不在线用户数据转储到mysql中，上线时再读取redis
+c.nosql: mongodb/couchbase
