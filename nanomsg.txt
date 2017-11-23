@@ -1,0 +1,82 @@
+
+nanomsg is a is a socket library that provides several common communication patterns. 
+It aims to make the networking layer fast, scalable, and easy to use. Implemented in C, 
+it works on a wide range of operating systems with no further dependencies.
+
+The communication patterns, also called "scalability protocols", 
+are basic blocks for building distributed systems. By combining them 
+you can create a vast array of distributed applications. 
+The following scalability protocols are currently available:
+
+    PAIR - simple one-to-one communication
+    BUS - simple many-to-many communication
+    REQREP - allows to build clusters of stateless services to process user requests
+    PUBSUB - distributes messages to large sets of interested subscribers
+    PIPELINE - aggregates messages from multiple sources and load balances them among many destinations
+    SURVEY - allows to query state of multiple applications in a single go
+
+Scalability protocols are layered on top of the transport layer in the network stack. 
+At the moment, the nanomsg library supports the following transports mechanisms:
+
+    INPROC - transport within a process (between threads, modules etc.)
+    IPC - transport between processes on a single machine
+    TCP - network transport via TCP
+    WS - websockets over TCP
+
+The library exposes a BSD-socket-like C API to the applications.
+
+mangos代码分析
+https://github.com/go-mangos/mangos.git
+1.bus
+a。将dail和listen的conn存储到map中
+b。发送消息时，遍历map，将消息发送到每个conn上
+c。接收map中每个conn上的消息
+
+2.pull
+a。将listen的conn直接启动消息接收协程
+b。不发送消息
+c。接收map中每个conn上的消息
+
+3.push
+a。将dail的conn存储到map中
+b。发送消息时，map中conn通过select从chan中读取消息发送，即一条消息只发送到一条连接上
+c。不接收消息
+
+4.pair
+a。listen和dail是1对1的，即只记录第一个连接上的conn
+b。从chan中获取待发送消息后，向conn上发送消息
+c。从conn上获取接收消息，然后放入接收chan中
+
+5.pub
+a。将listen的conn存储到map中
+b。发送消息时，遍历map，将消息发送到每个conn上
+c。不接收消息
+
+6.sub
+a。将dail的conn直接启动接收协程
+b。不发送消息
+c。接收map中每个conn上的消息，接收后检查消息前缀，是否是需要接收的消息
+
+7.req
+a。将dail的conn保存到map中
+b。发送消息时，map中conn通过select从chan中读取消息发送，即一条消息只发送到一条连接上
+c。接收conn中的消息，因为消息模型为请求／应答，所以接收的消息来自发送请求的conn上
+
+8.rep
+a。将listen的conn保存到map中
+b。发送消息时，根据消息中的id确定来自哪个conn，然后发送出去
+c。接收消息时，保存连接id（确保反馈时能找到消息来自哪条连接），然后放入chan中待处理
+
+9.surveyor
+a。将listen的conn保存到map中
+b。发送消息时，遍历map，将消息发送到每个conn上
+c。接收所有conn上的消息
+
+10.respondent
+a。将dial的conn保存到map中
+b。发送消息时，根据消息中的id确定来自哪个conn，然后发送出去
+c。接收消息时，保存连接id（确保反馈时能找到消息来自哪条连接），然后放入chan中待处理
+
+11.star
+
+
