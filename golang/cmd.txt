@@ -4,6 +4,11 @@
 go vet，只在一个单独的包内可用，不能使用flag 选项（来激活某些指定的检测）
 go tool vet更加完整，它可用用于文件和目录。目录被递归遍历来找到包
 go tool vet <directory|files>
+
 例：
+go vet
+go tool vet main.go
+
+自定义格式化参数检查
 go tool vet -printfuncs customLogf xxx.go
 
